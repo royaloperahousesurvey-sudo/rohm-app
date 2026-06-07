@@ -4,5 +4,6 @@ self.addEventListener('activate', e => {
   clients.claim();
 });
 self.addEventListener('fetch', e => {
+  if (e.request.url.includes('/api/')) return;
   e.respondWith(fetch(e.request));
 });
