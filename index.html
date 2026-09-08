@@ -143,22 +143,22 @@
 </div>
 
 <div class="divider"></div>
-<div class="footer">Royal Opera House Muscat Beta Testing</div>
+<div class="footer">Royal Opera House Muscat </div>
 
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
   // Geo check using script tag — works in Safari (bypasses fetch restrictions)
-  function checkCountry(data) {
-    var code = typeof data === 'string' ? data : (data.country_code || data.country);
-    if (code && code.trim() !== 'OM') {
-      document.getElementById('geoOverlay').style.display = 'flex';
-    }
-  }
-  const s = document.createElement('script');
-  s.src = 'https://get.geojs.io/v1/ip/country.js?callback=checkCountry';
-  s.onerror = () => {};
-  document.head.appendChild(s);
+  // Geo check using Cloudflare trace — reliable, works in Safari
+  fetch('https://www.cloudflare.com/cdn-cgi/trace')
+    .then(r => r.text())
+    .then(text => {
+      const match = text.match(/loc=([A-Z]{2})/);
+      if (match && match[1] !== 'OM') {
+        document.getElementById('geoOverlay').style.display = 'flex';
+      }
+    })
+    .catch(() => {}); // fail open if unreachable
 </script>
 </body>
 </html>
