@@ -42,7 +42,17 @@
   .btn-label { font-size: 16px; color: #f0e6c8; }
   .btn-arrow { margin-left: auto; color: #3d2e00; font-size: 18px; transition: color 0.2s; }
   .btn:hover .btn-arrow { color: #c9a84c; }
-  .footer { margin-top: 10px; font-size: 11px; color: #3d2e00; letter-spacing: 1px; text-align: center; }
+  .geo-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #0d0d0d;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px; z-index: 999;
+  }
+  .geo-overlay .geo-icon  { font-size: 52px; margin-bottom: 24px; }
+  .geo-overlay .geo-en   { font-size: 16px; color: #c9a84c; letter-spacing: 1px; margin-bottom: 16px; line-height: 1.6; }
+  .geo-overlay .geo-ar   { font-size: 16px; color: #7a6a3a; letter-spacing: 1px; line-height: 1.6; font-family: Arial, sans-serif; direction: rtl; }
+  .geo-overlay .geo-divider { width: 120px; height: 1px; background: linear-gradient(to right, transparent, #c9a84c, transparent); margin: 20px auto; }
 </style>
 </head>
 <body>
@@ -137,6 +147,16 @@
 
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  // Geo check — fail open (show app if check cannot be reached)
+  fetch('https://ipapi.co/json/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.country_code && data.country_code !== 'OM') {
+        document.getElementById('geoOverlay').style.display = 'flex';
+      }
+    })
+    .catch(() => {}); // fail open — show app if API unreachable
 </script>
 </body>
 </html>
