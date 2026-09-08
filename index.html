@@ -59,7 +59,7 @@
 
 <div class="logo-area">
   <img class="logo-img" src="rohm-logo.png" alt="Royal Opera House Muscat">
-  <div class="subtitle">Guest Artists Beta test</div>
+  <div class="subtitle">Guest Artists</div>
 </div>
 <div class="divider"></div>
 
@@ -143,20 +143,21 @@
 </div>
 
 <div class="divider"></div>
-<div class="footer">Royal Opera House Muscat </div>
+<div class="footer">Royal Opera House Muscat Beta Testing</div>
 
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
   // Geo check using script tag — works in Safari (bypasses fetch restrictions)
   function checkCountry(data) {
-    if (data && data.country_code && data.country_code !== 'OM') {
+    var code = typeof data === 'string' ? data : (data.country_code || data.country);
+    if (code && code.trim() !== 'OM') {
       document.getElementById('geoOverlay').style.display = 'flex';
     }
   }
   const s = document.createElement('script');
-  s.src = 'https://ipapi.co/json/?callback=checkCountry';
-  s.onerror = () => {}; // fail open if API unreachable
+  s.src = 'https://get.geojs.io/v1/ip/country.js?callback=checkCountry';
+  s.onerror = () => {};
   document.head.appendChild(s);
 </script>
 </body>
