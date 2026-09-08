@@ -143,22 +143,37 @@
 </div>
 
 <div class="divider"></div>
-<div class="footer">Royal Opera House Muscat </div>
+<div class="footer">Royal Opera House Muscat V. 3.0</div>
 
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
   // Geo check using script tag — works in Safari (bypasses fetch restrictions)
-  // Geo check using Cloudflare trace — reliable, works in Safari
+  // Geo check — tries both fetch and JSONP to cover all browsers
+  function showGeoBlock(code) {
+    if (code && code.trim() !== 'OM') {
+      document.getElementById('geoOverlay').style.display = 'flex';
+    }
+  }
+
+  // Method 1: Cloudflare fetch (works in Chrome)
   fetch('https://www.cloudflare.com/cdn-cgi/trace')
     .then(r => r.text())
     .then(text => {
-      const match = text.match(/loc=([A-Z]{2})/);
-      if (match && match[1] !== 'OM') {
-        document.getElementById('geoOverlay').style.display = 'flex';
-      }
+      const m = text.match(/loc=([A-Z]{2})/);
+      if (m) showGeoBlock(m[1]);
     })
-    .catch(() => {}); // fail open if unreachable
+    .catch(() => {});
+
+  // Method 2: JSONP script tag (works in Safari)
+  window._geoCallback = function(data) {
+    const code = typeof data === 'string' ? data : (data.country_code || data.country);
+    showGeoBlock(code);
+  };
+  const _gs = document.createElement('script');
+  _gs.src = 'https://ipapi.co/country/?callback=_geoCallback';
+  _gs.onerror = () => {};
+  document.head.appendChild(_gs);
 </script>
 </body>
 </html>
