@@ -143,36 +143,39 @@
 </div>
 
 <div class="divider"></div>
-<div class="footer">Royal Opera House Muscat V 4.0</div>
+<div class="footer">Royal Opera House Muscat V 5.0</div>
 
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
   // Geo check using script tag — works in Safari (bypasses fetch restrictions)
-  // Geo check — tries both fetch and JSONP to cover all browsers
+  // Geo check — multiple methods to cover all browsers and service worker states
+  var _geoBlocked = false;
   function showGeoBlock(code) {
-    if (code && code.trim() !== 'OM') {
+    if (!_geoBlocked && code && code.trim() !== 'OM') {
+      _geoBlocked = true;
       document.getElementById('geoOverlay').style.display = 'flex';
     }
   }
 
-  // Method 1: Cloudflare fetch (works in Chrome)
-  fetch('https://www.cloudflare.com/cdn-cgi/trace')
+  // Method 1: Cloudflare fetch with explicit CORS
+  fetch('https://www.cloudflare.com/cdn-cgi/trace', { mode: 'cors', credentials: 'omit' })
     .then(r => r.text())
-    .then(text => {
-      const m = text.match(/loc=([A-Z]{2})/);
-      if (m) showGeoBlock(m[1]);
-    })
+    .then(text => { const m = text.match(/loc=([A-Z]{2})/); if (m) showGeoBlock(m[1]); })
     .catch(() => {});
 
-  // Method 2: JSONP script tag (works in Safari)
+  // Method 2: XHR (different from fetch, not affected by same restrictions)
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.cloudflare.com/cdn-cgi/trace');
+  xhr.onload = function() { var m = xhr.responseText.match(/loc=([A-Z]{2})/); if (m) showGeoBlock(m[1]); };
+  xhr.send();
+
+  // Method 3: JSONP script tag (bypasses CORS entirely)
   window._geoCallback = function(data) {
-    const code = typeof data === 'string' ? data : (data.country_code || data.country);
-    showGeoBlock(code);
+    showGeoBlock(typeof data === 'string' ? data : (data.country_code || data.country));
   };
-  const _gs = document.createElement('script');
+  var _gs = document.createElement('script');
   _gs.src = 'https://ipapi.co/country/?callback=_geoCallback';
-  _gs.onerror = () => {};
   document.head.appendChild(_gs);
 </script>
 </body>
